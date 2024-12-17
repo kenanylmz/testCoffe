@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {signIn} from '../config/firebase';
 import auth from '@react-native-firebase/auth';
@@ -25,8 +26,10 @@ const Login = ({navigation}) => {
 
     try {
       setLoading(true);
+      console.log('Attempting login with email:', email); // Debug log
       
       const result = await signIn(email, password);
+      console.log('Login result:', result); // Debug log
       
       if (result.success) {
         if (!result.user.emailVerified) {
@@ -35,19 +38,11 @@ const Login = ({navigation}) => {
             email: email,
             userId: result.user.uid,
           });
-        } else {
-          // Kullanıcı rolüne göre yönlendirme
-          switch (result.role) {
-            case 'superadmin':
-              navigation.navigate('SuperAdmin');
-              break;
-            case 'admin':
-              navigation.navigate('Admin');
-              break;
-            default:
-              navigation.navigate('Kafeler');
-          }
         }
+        // Log the user role we received
+        console.log('User role from login:', result.role);
+        
+        // We don't need to navigate here as App.tsx will handle it based on auth state
       } else {
         // Show specific error message from Firebase
         let errorMessage = 'Giriş yapılamadı.';
@@ -70,6 +65,7 @@ const Login = ({navigation}) => {
         Alert.alert('Hata', errorMessage);
       }
     } catch (error) {
+      console.error('Login error:', error); // Debug log
       Alert.alert('Hata', error.message);
     } finally {
       setLoading(false);
@@ -79,6 +75,15 @@ const Login = ({navigation}) => {
   const handleRegister = () => {
     navigation.navigate('Kayıt');
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#4A3428" />
+        <Text style={styles.loadingText}>Giriş yapılıyor...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -104,6 +109,7 @@ const Login = ({navigation}) => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
         />
         <TextInput
           style={styles.input}
@@ -112,11 +118,13 @@ const Login = ({navigation}) => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!loading}
         />
 
         <TouchableOpacity 
           style={styles.rememberMeContainer} 
           onPress={() => setRememberMe(!rememberMe)}
+          disabled={loading}
         >
           <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
             {rememberMe && <Text style={styles.checkmark}>✓</Text>}
@@ -125,7 +133,7 @@ const Login = ({navigation}) => {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.loginButton} 
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
           onPress={handleLogin}
           disabled={loading}
         >
@@ -136,7 +144,7 @@ const Login = ({navigation}) => {
 
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>Hesabınız yok mu? </Text>
-          <TouchableOpacity onPress={handleRegister}>
+          <TouchableOpacity onPress={handleRegister} disabled={loading}>
             <Text style={styles.registerLink}>Kayıt Olun</Text>
           </TouchableOpacity>
         </View>
@@ -149,6 +157,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#4A3428',
+    fontSize: 16,
   },
   topSection: {
     flex: 0.4,
@@ -220,6 +237,9 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     marginTop: 20,
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#666',
   },
   loginButtonText: {
     color: 'white',
