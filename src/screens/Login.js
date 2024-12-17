@@ -26,8 +26,6 @@ const Login = ({navigation}) => {
     try {
       setLoading(true);
       
-      // Firebase doesn't support persistence in React Native directly
-      // We'll handle remember me through AsyncStorage if needed
       const result = await signIn(email, password);
       
       if (result.success) {
@@ -38,8 +36,17 @@ const Login = ({navigation}) => {
             userId: result.user.uid,
           });
         } else {
-          // If email is verified, navigate to Kafeler
-          navigation.navigate('Kafeler');
+          // Kullanıcı rolüne göre yönlendirme
+          switch (result.role) {
+            case 'superadmin':
+              navigation.navigate('SuperAdmin');
+              break;
+            case 'admin':
+              navigation.navigate('Admin');
+              break;
+            default:
+              navigation.navigate('Kafeler');
+          }
         }
       } else {
         // Show specific error message from Firebase

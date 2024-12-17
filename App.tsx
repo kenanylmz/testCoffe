@@ -13,6 +13,8 @@ import Dogrulama from './src/screens/Dogrulama';
 import Mudavim from './src/screens/Mudavim';
 import Kuponlarım from './src/screens/Kuponlarım';
 import Profil from './src/screens/Profil';
+import Admin from './src/screens/Admin/Admin';
+import SuperAdmin from './src/screens/Admin/SuperAdmin';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -119,6 +121,8 @@ const App = () => {
             <Stack.Screen name="Kafeler" component={Kafeler} />
             <Stack.Screen name="MainTabs" component={TabNavigator} />
             <Stack.Screen name="Dogrulama" component={Dogrulama} />
+            <Stack.Screen name="Admin" component={Admin} />
+            <Stack.Screen name="SuperAdmin" component={SuperAdmin} />
           </>
         )}
       </Stack.Navigator>
